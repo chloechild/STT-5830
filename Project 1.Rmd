@@ -1,0 +1,304 @@
+---
+title: "Project 1"
+output: pdf_document
+date: "2024-09-12"
+---
+# 1.43. Refer to the CDI data set in Appendix C.2. The number of active physicians in a CDI (Y) is expected to be related to total population, number of hospital beds, and total personal income. Assume that first-order regression model (1.1) is appropriate for each of the three predictor variables. 
+
+```{r}
+CDI <- read.table("http://www.cnachtsheim-text.csom.umn.edu/Kutner/Appendix%20C%20Data%20Sets/APPENC02.txt", sep ="" , header = FALSE)
+
+
+head(CDI)
+
+colnames(CDI) <- c("identification_number", "county", "state", "land_area", "total_pop", "pop18_34", "pop_65+", "physicians", "beds", "serious_crimes", "high_school", "bachelors", "below_poverty", "unemployment", "per_capita_income", "personal_income", "region")
+
+head(CDI)
+
+n= nrow(CDI)
+
+```
+
+
+# A. Regress the number of active physicians in turn on each of the three predictor variables. State the estimated regression functions. 
+
+## Regressing the number of Active Physicians using Total Population as the Predictor Variable
+
+```{r}
+population_model <- lm(physicians ~ total_pop, data = CDI)
+
+population_summary <- summary(population_model)
+
+population_summary
+```
+
+#### The estimated regression function using Total Population to predict the Number of Active Physicians is 
+
+### yhat = -1.106e + 2.795e-03x
+
+## Regressing the Number of Active Physicians using the Number of Beds as the Predictor Variable
+
+```{r}
+beds_model <- lm(physicians ~ beds, data = CDI)
+
+beds_summary <- summary(beds_model)
+
+beds_summary
+```
+
+#### The estimated regression function when using Number of Beds to predict Number of Active Physicians is 
+
+### yhat = -95.93218 + 0.74312x
+
+## Regressing the Number of Active Physicians using Personal Income as the Predictor Variable
+
+```{r}
+income_model <- lm(physicians ~ personal_income, data = CDI)
+
+income_summary <- summary(income_model)
+
+income_summary
+```
+
+#### The estimated regression function using Personal Income to predict the Number of Active Physicians is 
+
+### yhat = -48.39485 + 0.13170x
+
+# B. Plot the three estimated regression functions and data on separate graphs. Does a linear regression relation appear to provide a good fit for each of the three predictor variables? 
+
+
+### Population and Physician Regression Function Plotted
+
+```{r}
+library(ggplot2)
+
+# Plot for Population
+ggplot(CDI, aes(x = total_pop, y = physicians)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)+
+  labs(title = "Number of Physicians vs. Total Population",
+       x = "Total Population",
+       y = "Number of Physicians")
+
+```
+
+Upon examining the summary of the linear regression model assessing the relationship between Total Population and the Number of Active Physicians, it is observed that the model has an R-squared value of 0.8841. This high R-squared value indicates a strong relationship between the predictor (Total Population) and the response variable (Number of Active Physicians), suggesting that the model explains a significant portion of the variance in the number of physicians based on the total population. The linear regression plot of Total Population and the Number of Active Physicians appears to generally support this conclusion but the current visualization is difficult to thoroughly read and determine the fit of the linear regression relation Looking closely, it appears this difficulty in visualization could be due to some outliers in the Total Population. To better look at how well the linear regression model fits the data, I'm going to remove the outliers in the Total Population and re-plot the data.
+
+
+### Finding outliers in the Total Population
+```{r}
+total_pop_IQR <- IQR(CDI$total_pop) # Calculate IQR
+
+total_pop_Q1 <- quantile(CDI$total_pop, 0.25) #Calculate Q1 for total population
+total_pop_Q3 <- quantile(CDI$total_pop, 0.75) #Calculate Q3 for total population
+
+total_pop_Q1 # Print total population Q1
+total_pop_Q3 #Print total population Q3
+
+#Calculate and print lower outliers
+
+total_pop_lower_threshold <- total_pop_Q1 - 1.5 * total_pop_IQR 
+
+total_pop_lower_threshold
+
+# Calculate and print upper outliers
+
+total_pop_upper_threshold <- total_pop_Q3 + 1.5 * total_pop_IQR 
+
+total_pop_upper_threshold
+
+
+
+total_pop_outliers <- CDI$total_pop > total_pop_upper_threshold | CDI$total_pop < total_pop_lower_threshold #Create a vector for total population with outliers removed
+
+CDI_total_pop_outliers_removed <- CDI[!total_pop_outliers,] #Create a new data frame with the CDI dataframe itself modified to remove the total population outliers
+
+total_pop_outliers_removed_model <- lm(physicians ~ total_pop, data = CDI_total_pop_outliers_removed)
+summary(total_pop_outliers_removed_model)
+```
+
+### Total Population and Physicians Regression Function Plotted With Outliers Removed
+
+```{r}
+# Plot for Population
+ggplot(CDI_total_pop_outliers_removed, aes(x = total_pop, y = physicians)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Number of Physicians vs. Total Population, Outliers Removed",
+       x = "Total Population, Outliers Removed",
+       y = "Number of Physicians")
+```
+
+With this modified linear regression plot, it is much easier to see that the linear regression plot of the Number of Active Physicians against the Total Population demonstrates a moderately good fit as the regression line moderately-closely follows the trend of the data points. Looking at the summary of the linear regression model, however, it does appear we lose some of the strength of the relationship between the predictor variable (Total Population) and the response variable (Number of Active Physicians) as the R-squared value goes from 0.8841 to 0.6222. This suggests that the outliers of the first plot likely skewed the fit slightly, inflating it. While this is a slightly less strong relationship however an R-squared value of 0.6222 still indicates a moderate relationship, as supported by the plot as well.
+
+## Number of Beds and Physicians Regression Function Plotted
+
+```{r}
+# Plot for Beds
+ggplot(CDI, aes(x = beds, y = physicians)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Number of Physicians vs. Number of Beds",
+       x = "Number of Beds",
+       y = "Number of Physicians")
+```
+
+Upon examining the summary of the linear regression model assessing the relationship between the Number of beds and the Number of Active Physicians, it is observed that the model has an R-squared value of 0.9034. This high R-squared value indicates a strong relationship between the predictor (Number of Beds) and the response variable (Number of Active Physicians), suggesting that the model explains a significant portion of the variance in the number of physicians based on the total population. The linear regression plot of the Number of Beds and the Number of Active Physicians appears to generally support this conclusion but the current visualization is difficult to thoroughly read and determine the fit of the linear regression relation Looking closely, it appears this difficulty in visualization could be due to some outliers in the Total Population. To better look at how well the linear regression model fits the data, I'm going to remove the outliers in the Total Population and re-plot the data.
+
+### Finding outliers in the Number of Beds
+
+```{r}
+beds_IQR <- IQR(CDI$beds) # Calculate IQR for number of beds
+
+beds_Q1 <- quantile(CDI$beds, 0.25) #Calculate Q1 for number of beds
+beds_Q3 <- quantile(CDI$beds, 0.75) #Calculate Q3 for number of beds
+
+beds_Q1 # Print number of beds Q1
+beds_Q3 #Print number of beds Q3
+
+#Calculate and print lower outliers
+
+beds_lower_threshold <- beds_Q1 - 1.5 * beds_IQR 
+
+beds_lower_threshold
+
+# Calculate and print upper outliers
+
+beds_upper_threshold <- beds_Q3 + 1.5 * beds_IQR 
+
+beds_upper_threshold
+
+
+
+beds_outliers <- CDI$beds > beds_upper_threshold | CDI$beds < beds_lower_threshold #Create a vector for number of beds with outliers removed
+
+CDI_beds_outliers_removed <- CDI[!beds_outliers,] #Create a new data frame with the CDI dataframe itself modified to remove the number of beds outliers
+
+beds_outliers_removed_model <- lm(physicians ~ beds, data = CDI_beds_outliers_removed)
+summary(beds_outliers_removed_model)
+```
+
+
+### Number of Beds and Physicians Regression Function Plotted with Outliers excluded
+
+```{r}
+# Plot for Beds
+ggplot(CDI_beds_outliers_removed, aes(x = beds, y = physicians)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Number of Physicians vs. Number of Beds, Outliers Removed",
+       x = "Number of Beds, Outliers Removed",
+       y = "Number of Physicians")
+
+
+```
+
+With this modified linear regression plot, it is much easier to see that the linear regression plot of the Number of Active Physicians against the Number of Beds demonstrates a moderately good fit as the regression line moderately-closely follows the trend of the data points. Looking at the summary of the linear regression model, however, it does appear we lose some of the strength of the relationship between the predictor variable (Total Population) and the response variable (Number of Active Physicians) as the R-squared value goes from 0.9034 to 0.6519. This suggests that the outliers of the first plot likely skewed the fit slightly, inflating it. While this is a slightly less strong relationship however an R-squared value of  0.6519 still indicates a moderate relationship, a conclusion also supported by the plot.
+
+## Personal Income and Number of Physicians Regression Function Plotted
+
+```{r}
+# Plot for Income
+ggplot(CDI, aes(x = personal_income, y = physicians)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Number of Physicians vs. Personal Income",
+       x = "Personal Income",
+       y = "Number of Physicians")
+
+```
+
+Upon examining the summary of the linear regression model assessing the relationship between Personal Income and the Number of Active Physicians, it is observed that the model has an R-squared value of  0.8989. This high R-squared value indicates a strong relationship between the predictor (Personal Income) and the response variable (Number of Active Physicians), suggesting that the model explains a significant portion of the variance in the number of physicians based on the total population. The linear regression plot of the Number of Beds and the Number of Active Physicians appears to generally support this conclusion but the current visualization is difficult to thoroughly read and determine the fit of the linear regression relation Looking closely, it appears this difficulty in visualization could be due to some outliers in the Total Population. To better look at how well the linear regression model fits the data, I'm going to remove the outliers in the Total Population and re-plot the data.
+
+### Finding outliers in Personal Income
+```{r}
+income_IQR <- IQR(CDI$personal_income) # Calculate IQR for personal income
+
+income_Q1 <- quantile(CDI$personal_income, 0.25) #Calculate Q1 for personal income
+income_Q3 <- quantile(CDI$personal_income, 0.75) #Calculate Q3 for personal income
+
+income_Q1 # Print personal income Q1
+income_Q3 #Print personal income Q3
+
+#Calculate and print lower outliers
+
+income_lower_threshold <- income_Q1 - 1.5 * income_IQR 
+
+income_lower_threshold
+
+# Calculate and print upper outliers
+
+income_upper_threshold <- income_Q3 + 1.5 * income_IQR 
+
+income_upper_threshold
+
+
+
+income_outliers <- CDI$personal_income > income_upper_threshold | CDI$personal_income < income_lower_threshold #Create a vector for personal income with outliers removed
+
+CDI_income_outliers_removed <- CDI[!income_outliers,] #Create a new data frame with the CDI dataframe itself modified to remove the personal income outliers
+
+income_outliers_removed_model <- lm(physicians ~ personal_income, data = CDI_income_outliers_removed)
+
+summary(income_outliers_removed_model)
+```
+
+### Personal Income and Number of Physicians Regression Function Plotted, Outliers Removed
+
+```{r}
+# Plot for Income
+ggplot(CDI_income_outliers_removed, aes(x = personal_income, y = physicians)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Number of Physicians vs.  Personal Income, Outliers Removed",
+       x = "Personal Income, Outliers Removed",
+       y = "Number of Physicians")
+
+```
+
+With this modified linear regression plot, it is much easier to see that the linear regression plot of the Number of Active Physicians against  Personal Income demonstrates a moderately good fit as the regression line moderately-closely follows the trend of the data points. Looking at the summary of the linear regression model, however, it does appear we lose some of the strength of the relationship between the predictor variable (Total Population) and the response variable (Number of Active Physicians) as the R-squared value goes from 0.8989 to  0.5975 This suggests that the outliers of the first plot likely skewed the fit slightly, inflating it. While this is a slightly less strong relationship however an R-squared value of 0.5975 still indicates, while less strong than the other two variables, a moderate relationship, a conclusion also supported by the plot.
+
+# C. Calculate MSE for each of the three predictor variables. Which predictor variable leads to the smallest variability around the fitted regression line? 
+
+## MSE For Total Population
+
+```{r MSE Total Population}
+eitotalpop <- population_summary$residuals
+
+ssetotalpop = sum(eitotalpop^2)
+
+msetotalpop = ssetotalpop/(n - 2)
+msetotalpop
+```
+
+### The MSE for Total Population is 372203.5 number of active physicians squared
+
+
+## MSE for Number of Beds
+```{r MSE Number of Beds}
+eibeds <- beds_summary$residuals
+
+ssebeds = sum(eibeds^2)
+
+msebeds = ssebeds/(n - 2)
+msebeds
+```
+
+### The MSE for Number of Beds is 310191.9 number of active physicians squared
+
+
+## MSE For Personal Income
+```{r}
+eiincome <- income_summary$residuals
+
+sseincome = sum(eiincome^2)
+
+mseincome = sseincome/(n - 2)
+mseincome
+```
+
+### The MSE for Personal Income is 324539.4 number of active physicians squared
+
+
+
+*With MSE providing us an estimate for variability, it can be seen that using the number of beds to estimate the number of active physicians leads to the smallest variability around the fitted regression line at MSE = 310191.9 active physicians sqared as compared to MSE = 324539.4 active physicians squared when using personal income to estimate the number of active physicians and MSE = 372203.5 active physicians squared when using the total population to estimate the number of active physicians.*
