@@ -1,0 +1,295 @@
+---
+title: "Project 2"
+output: pdf_document
+date: "2024-09-23"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 5.12. Refer to Flavor deterioration Problem 5.4. Find $(X'X)^{-1}$
+```{r}
+Y <- c(7.8, 9.0, 10.2, 11.0, 11.7)
+Y <- as.matrix(Y)
+
+X <- c(8,4,0,-4,-8)
+X <- as.matrix(X)
+X <- cbind(rep(1,5), X)
+                      
+
+Yt <- t(Y)
+
+YtY <- Yt %*% Y
+
+
+
+Xt <- t(X)
+
+XtX <- Xt %*% X
+
+
+XtXinvert <- solve(XtX) # getting the inverse of transpose of X * X
+XtXinvert
+
+XtXinvert %*% XtX # Double Checking the inverse is correct
+```
+
+# 5.13. Refer to Consumer finance Problem 5.5. Find $(X'X)^{-1}$ 
+```{r}
+# Getting the X vector
+x <- c(4, 1, 2, 3, 3, 4) 
+x <- as.matrix(x)
+x <- cbind(rep(1,6), x)
+
+# Getting the transpose of x
+
+xt <- t(x)
+
+# Getting the Y vector
+
+y <- c(16, 5, 10, 15, 13, 22)
+y <- as.matrix(y)
+
+
+# Calculating matrix multiplication to get the vector of estimated regression coeffecients
+
+xtx <- xt %*% x # transpose of X * X
+
+
+
+xtxinvert <- solve(xtx) # getting the inverse of transpose of X * X
+
+xtxinvert
+
+xtxinvert %*% xtx # Double Checking the inverse is correct
+```
+
+# Chapter 5: Question 18
+
+## Part A: State the above in matrix notation. 
+
+\begin{equation} \label{eq:matex}
+W = 
+\begin{pmatrix}
+  W_1 \\
+  W_2
+\end{pmatrix}
+=
+\begin{pmatrix}
+  \frac{1}{4} & \frac{1}{4} & \frac{1}{4} & \frac{1}{4} \\
+  \frac{1}{2} & \frac{1}{2} & -\frac{1}{2} & -\frac{1}{2}
+\end{pmatrix} 
+\begin{pmatrix}
+  Y_1 \\
+  Y_2 \\
+  Y_3 \\
+  Y_4
+\end{pmatrix}
+\end{equation}
+
+\ref{eq:matex}
+
+
+## Part B: Find the expectation of the random vector W. 
+
+\begin{equation} \label{eq:matex}
+E{W} = 
+E{\begin{pmatrix}
+  W_1 \\
+  W_2
+\end{pmatrix}}
+=
+\begin{pmatrix}
+  \frac{1}{4}[E{Y_1} & E{Y_2} & E{Y_3} & E{Y_4}] \\
+  \frac{1}{2} [E{Y_1} & E{Y_2} & E{Y_3} & E{Y_4}]
+\end{pmatrix} 
+\end{equation}
+
+\ref{eq:matex}
+
+## Part C:  Find the variance-covariance matrix of W. 
+
+\begin{equation} \label{eq:matex}
+\sigma^{2}{W} = 
+\begin{pmatrix}
+  \frac{1}{4} & \frac{1}{4} & \frac{1}{4} & \frac{1}{4} \\
+  \frac{1}{2} & \frac{1}{2} & -\frac{1}{2} & -\frac{1}{2}
+\end{pmatrix}
+\begin{pmatrix}
+  \\ \sigma^2 \{ Y_1 \} & \sigma \{ Y_1, Y_2 \} &  \sigma \{ Y_1, Y_3 \} &  \sigma \{ Y_1, Y_4 \} \\
+  \sigma \{ Y_2, Y_1 \} & \sigma^2 \{ Y_2 \} & \sigma \{ Y_2, Y_3 \} &  \sigma \{ Y_2, Y_4 \} \\
+  \sigma \{ Y_3, Y_1 \} & \sigma \{ Y_3, Y_2 \} & \sigma^2 \{ Y_3 \} &  \sigma \{ Y_3, Y_4 \} \\
+  \sigma \{ Y_4, Y_1 \} & \sigma \{ Y_4, Y_2 \} & \sigma \{ Y_4, Y_3 \} & \sigma^2 \{ Y_4 \}
+\end{pmatrix}  
+\begin{pmatrix}
+  \frac{1}{4} & \frac{1}{2} \\
+  \frac{1}{4} & \frac{1}{2} \\
+  \frac{1}{2} & -\frac{1}{2} \\
+  \frac{1}{4} & -\frac{1}{2}
+\end{pmatrix}
+\end{equation}
+
+\ref{eq:matex}
+
+# Chapter 5: Question 24 Refer to Consumer finance Problems 5.5 and 5.13.
+
+## Using the Data from Question 5.13 From earlier in this project
+
+
+## A. Using matrix methods, obtain the following: (1) vector of estimated regression coefficients, (2) vector of residuals, (3) SSR, (4) SSE, (5) estimated variance-covariance matrix of b, (6) point estimate of E{Yh} when X/r = 4, (7) s2{pred} when XIz = 4. 
+
+### 1. Vector of Estimated Regression Coefficients
+```{r}
+# Obtaining the vector of estimated regression coefficients
+xty <- xt %*% y
+b <- xtxinvert %*% xty
+b
+
+# Double Checking the vector of estimated regression coefficient
+finance_model <- lm(y ~ x)
+
+summary_finance_model <- summary(finance_model)
+summary_finance_model
+```
+
+### 2 Vector of Residuals
+```{r}
+e <- y - x%*%b # Obtaining the vector of residuals
+e
+
+finance_model$residuals #Double checking the vector of residuals is accurate
+```
+
+### 3. SSR
+
+```{r}
+yt <- t(y)
+j <- matrix(1, nrow = length(y), ncol = length(y))
+ssto <- yt %*% y - (1 / length(y)) * yt %*% j %*% y  
+ssto
+
+et <- t(e)
+sse <- et%*%e
+sse
+
+# Double checking the SSE
+bt <- t(b)
+ssecheck <- yt%*%y - bt%*%xt%*%y
+ssecheck
+
+ssr = ssto - sse
+ssr
+
+# Double checking the SSR
+checkssr <- bt%*%xt%*%y - (1/length(y))%*%yt%*%j%*%y
+checkssr
+```
+
+### 4. SSE
+```{r}
+# Obtaining the SSE 
+et <- t(e)
+sse <- et%*%e
+sse
+
+# Double-checking the SSE
+bt <- t(b)
+ssecheck <- yt%*%y - bt%*%xt%*%y
+ssecheck
+```
+
+### 5. Estimated Variance-Covariance matrix of b
+```{r}
+# Obtaining the MSE
+
+mse <- sse/(nrow(y)-2)
+mse <- as.numeric(mse)
+
+# Obtaining the variance-covariance matrix of B
+
+varmatrix <- mse*xtxinvert
+varmatrix
+```
+
+### 6. Point Estimate of $E \{ Y_h \}$ when $X_h$ = 4
+```{r}
+
+# Obtaining the point estimate
+x_h <- c(1, 4)
+y_h_estimate <- x_h %*% b
+y_h_estimate
+
+# Double checking the point estimate
+checkingy_h_estimate <- 0.4390244 + 4.6097561*4
+checkingy_h_estimate
+```
+
+### 7. $s^2$ \{pred\} when $X_h$ = 4
+
+```{r}
+# Creating a matrix for when X, the number of competing loan companies operating in the city, is 4
+x_h <- matrix(c(1, 4), nrow = 2, ncol = 1)
+
+
+#Obtaining the variance in the predictor variable (the number per thousand of the company's loans made in that city that are currently delinquent) when the number of competing loan companies operating in the city is 4
+s2y_hat_4 <- mse * (1 + (t(x_h) %*% xtxinvert %*% x_h))
+
+s2y_hat_4
+
+# Double checking the variance in the predictor, y, when X is 4
+checks2y_hat_4 <- mse * (1 + t(x_h) %*% xtxinvert %*% x_h)
+
+checks2y_hat_4
+```
+
+## B. From your estimated variance-covariance matrix in part (A.5), obtain the following:
+
+### 1. $s \{ b_0, b_1 \}$
+```{r}
+# Pulling the sample variances from the variance-covariance matrix from part A.5
+sd2b <- diag(varmatrix)
+
+# Getting the square root of these sample variances to find the sample standard deviations of b_0 and b_1
+sdb <- sqrt(sd2b)
+sdb
+```
+
+
+### 2. $s^2 \{ b_0 \}$
+```{r}
+# Obtaining the sample variance of b_0 from the variance-covariance matrix from part A.5
+sd2b0 <- varmatrix[1,1]
+sd2b0
+```
+
+### 3. $s \{ b_1 \}$
+```{r}
+# Obtaining the sample standard deviation of b_1 from the variance-covariance matrix from part A.5
+sdb1 <- sqrt(varmatrix[2,2])
+sdb1
+```
+
+## C. Find the hat matrix H.
+```{r}
+# Obtaining the hat matrix
+H <- x %*% xtxinvert %*% xt
+H
+```
+
+## D. Find $s^2 \{ e \}$
+```{r}
+
+I <- diag(length(y))
+
+sd2e <- mse * (I-H)
+sd2e
+```
+
+
+
+
+
+
+
+
